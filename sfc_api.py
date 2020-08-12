@@ -1,5 +1,5 @@
 import http, os, sys, json # simple file storage backend
-import random, string, os.path # tested on python 3.8.5
+import random, string, os.path, time # tested on python 3.8.5
 from http.server import HTTPServer, CGIHTTPRequestHandler
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from io import BytesIO
@@ -13,6 +13,7 @@ WEB_PORT = data["WWW_PORT"]
 WEB_FOLDER = data["WWW_FOLDER"]
 CONTAINER_FOLDER = data["WWW_FOLDER"] + "/" + data["CONTAINER_FOLDER"]
 MAX_UPLOAD = data["MAX_UPLOAD_SIZE"]
+UPLOAD_TOKEN = data["UPLOAD_TOKEN"]
 
 apiURL = ("http://" + str(SERVER) + ":" + str(API_PORT))
 webURL = ("http://" + str(SERVER) + ":" + str(WEB_PORT))
@@ -29,26 +30,34 @@ class ReqHandler(BaseHTTPRequestHandler): # handle accidental GET requests to th
 
     def do_POST(self): # handle incoming POST requests
         content_length = int(self.headers['Content-Length'])
+        uploader_token = str(self.headers['Token'])
         body = self.rfile.read(content_length)
         if content_length > MAX_UPLOAD: # handle files that are too big, https://stackoverflow.com/questions/28217869/python-basehttpserver-file-upload-with-maxfile-size
             print("Rejected large upload.")
             self.send_response(431) # 431 Request Header Fields Too Large
             self.end_headers()
-        
         else:
-            self.send_response(200) 
-            newFileName=(str(filenameGenerator(6)) + ".txt")
-            with open(str(newFileName), 'w') as newUpload: # sourced from https://www.geeksforgeeks.org/create-an-empty-file-using-python/
-                newUpload.write(str(body)) # store the string that we recieved
-                pass
-            stats = os.stat(newFileName) # print stats for the newly uploaded file
-            print("New file created, " + str(newFileName) + " and is " + str(stats.st_size) + " bytes. File count: " + str(len([name for name in os.listdir(".") if os.path.isfile(name)])))
-            print(str(webURL) + "/c/" + newFileName) # prints the URL to the file
-            response = BytesIO() 
-            response.write(b"File uploaded!") # response back to the client
-            #response.write(str(webURL) + "/c/" + newFileName)
-            self.wfile.write(response.getvalue())
-            self.end_headers() # close the connection
+            if str(uploader_token) == UPLOAD_TOKEN: # checks for uploader token
+                self.send_response(200) 
+                self.send_header('Last-Modified', self.date_time_string(time.time()))
+                newFileName=(str(filenameGenerator(6)) + ".txt")
+                with open(str(newFileName), 'w') as newUpload: # sourced from https://www.geeksforgeeks.org/create-an-empty-file-using-python/
+                    newUpload.write(str(body)) # store the string that we recieved
+                    pass
+                stats = os.stat(newFileName) # print stats for the newly uploaded file
+                print("New file created, " + str(newFileName) + " and is " + str(stats.st_size) + " bytes. File count: " + str(len([name for name in os.listdir(".") if os.path.isfile(name)])))
+                print(str(webURL) + "/c/" + newFileName) # prints the URL to the file
+                response = BytesIO() 
+                response.write(b"File uploaded!") # response back to the client
+                #response.write(str(webURL) + "/c/" + newFileName)
+                self.wfile.write(response.getvalue())
+                self.end_headers() # close the connection
+            else:
+                response = BytesIO()
+                print("Rejected unauthorised uploader.")
+                self.send_response(403) # 403 Forbidden
+                response.write(b"A token required to upload.")
+                self.end_headers()
 
 # runtime
 def prestart():

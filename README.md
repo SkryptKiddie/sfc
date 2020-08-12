@@ -21,5 +21,6 @@ The `sfc_api.py` program handles uploading files and storing them in the contain
 - WWW folder, where the index files are stored. Default is `www/`.
 - Container folder, where the uploaded files are stored. Default is `www/c`
 - Maximum upload size, stored as bytes. Default is `10mb`.
+- Upload token, adds a layer of protection against unwanted uploads. Default is `test_123`. Must be embedded in the HTTP request Headers like so: `{"Token":"test_123"}`.
 3. `www/index.html` will need to be edited so you can input the IP to your instance for the cURL example on line 8.
 4. Launch both of the Python files with sudo. The page can be accessed at the servers IP on port 80.
