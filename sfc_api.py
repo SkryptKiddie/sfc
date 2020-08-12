@@ -48,8 +48,10 @@ class ReqHandler(BaseHTTPRequestHandler): # handle accidental GET requests to th
                 print("New file created, " + str(newFileName) + " and is " + str(stats.st_size) + " bytes. File count: " + str(len([name for name in os.listdir(".") if os.path.isfile(name)])))
                 print(str(webURL) + "/c/" + newFileName) # prints the URL to the file
                 response = BytesIO() 
-                response.write(b"File uploaded!") # response back to the client
-                #response.write(str(webURL) + "/c/" + newFileName)
+                
+                response.write(b"File uploaded! \n") # response back to the client
+                link = str.encode(str(webURL) + "/c/" + str(newFileName) + "\n")
+                response.write(link) # send the URL to the file
                 self.wfile.write(response.getvalue())
                 self.end_headers() # close the connection
             else:
