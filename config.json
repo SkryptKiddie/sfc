@@ -1,0 +1,8 @@
+{
+    "SERVER" : "192.168.0.33",
+    "WWW_PORT" : 80,
+    "API_PORT" : 8080,
+    "WWW_FOLDER" : "www",
+    "CONTAINER_FOLDER" : "c",
+    "MAX_UPLOAD_SIZE" : 10000000
+  }

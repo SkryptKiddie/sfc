@@ -1,0 +1,31 @@
+body {
+    color: black;
+    font-family: courier, arial, helvetica;
+    text-align: center;
+}
+
+code {
+    background-color: black;
+    color: lime;
+    line-height: 2;
+    padding: 5px 6px;
+}
+
+.box {
+    background-color: gainsboro;
+    padding: 15px 14px;
+    border-radius: 15px;
+    display: inline-block;
+    width: 45%;
+}
+
+.disclaimer {
+    color: red;
+    font-weight: bold;
+}
+
+.caution {
+    text-decoration: underline;
+    color: red;
+    font-weight: bold;
+}
