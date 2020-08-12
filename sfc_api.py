@@ -1,8 +1,10 @@
 import http, os, sys, json # simple file storage backend
 import random, string, os.path, time # tested on python 3.8.5
+from io import BytesIO
+from threading import Thread
+from socketserver import ThreadingMixIn
 from http.server import HTTPServer, CGIHTTPRequestHandler
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from io import BytesIO
 
 with open('./config.json', 'r') as config_file:
     data = json.load(config_file)
@@ -40,6 +42,7 @@ class ReqHandler(BaseHTTPRequestHandler): # handle accidental GET requests to th
             if str(uploader_token) == UPLOAD_TOKEN: # checks for uploader token
                 self.send_response(200) 
                 self.send_header('Last-Modified', self.date_time_string(time.time()))
+                self.send_header("Content-type", "application/json")
                 newFileName=(str(filenameGenerator(6)) + ".txt")
                 with open(str(newFileName), 'w') as newUpload: # sourced from https://www.geeksforgeeks.org/create-an-empty-file-using-python/
                     newUpload.write(str(body)) # store the string that we recieved
@@ -49,8 +52,8 @@ class ReqHandler(BaseHTTPRequestHandler): # handle accidental GET requests to th
                 print(str(webURL) + "/c/" + newFileName) # prints the URL to the file
                 response = BytesIO() 
                 
-                response.write(b"File uploaded! \n") # response back to the client
-                link = str.encode(str(webURL) + "/c/" + str(newFileName) + "\n")
+                response.write(b"""{"status" : "success"} \n""") # response back to the client
+                link = str.encode("""{"link" : """ + str(webURL) + "/c/" + str(newFileName) + "}\n")
                 response.write(link) # send the URL to the file
                 self.wfile.write(response.getvalue())
                 self.end_headers() # close the connection
@@ -58,7 +61,6 @@ class ReqHandler(BaseHTTPRequestHandler): # handle accidental GET requests to th
                 response = BytesIO()
                 print("Rejected unauthorised uploader.")
                 self.send_response(403) # 403 Forbidden
-                response.write(b"A token required to upload.")
                 self.end_headers()
 
 # runtime
@@ -71,10 +73,13 @@ def prestart():
     print("Container file count: " + str(len([name for name in os.listdir(".") if os.path.isfile(name)]))) # get amount of files in container folder
     print("Container contents: " + str(os.listdir("."))) # list contents of the container
 
+class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
+    daemon_threads = True
+
 try:
     prestart()
     print("Starting the server, quit with ^C\n")
-    apiServer = HTTPServer((SERVER, API_PORT), ReqHandler)
+    apiServer = ThreadingHTTPServer((SERVER, API_PORT), ReqHandler)
     apiServer.serve_forever() # start API endpoint
 except KeyboardInterrupt: # handle keyboard interrupt
     print("Stopping...")

@@ -9,7 +9,7 @@ The `sfc_api.py` program handles uploading files and storing them in the contain
 # TODO
 - Add support for more file types
 - Add HTTPS support
-- Add token support
+- ~~Add token support~~
 - Add dedicated upload logging (currently using the built-in logging from http.server)
 
 # Setup
