@@ -6,13 +6,15 @@ Each uploaded file is stored in the "container", which is just a fancy way of sa
 
 The `sfc_api.py` program handles uploading files and storing them in the container.
 
+`sfc_clean.py` can be used to delete all the contents of the container.
+
 # TODO
 - Add support for more file types
 - Add HTTPS support
 - ~~Add token support~~
 - Add dedicated upload logging (currently using the built-in logging from http.server)
 
-# Setup
+# Quick setup
 1. Clone this repository to any folder on your computer.
 2. Open the `config.json` file and configure the variables to your needs.
 - Server IP or domain that the server will be accessible from. Default is `127.0.0.1`.
