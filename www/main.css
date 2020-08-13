@@ -11,6 +11,15 @@ code {
     padding: 5px 6px;
 }
 
+a {
+    text-decoration: none;
+    color: blue;
+}
+
+a:hover {
+    text-decoration: underline !important;
+}
+
 .box {
     background-color: gainsboro;
     padding: 15px 14px;

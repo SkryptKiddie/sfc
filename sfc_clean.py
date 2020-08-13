@@ -1,4 +1,7 @@
 import os,sys,json,shutil
+from tinydb import TinyDB, Query
+
+log = TinyDB("./log.db") # upload logging database
 with open('./config.json', 'r') as config_file:
     data = json.load(config_file)
 
@@ -10,16 +13,18 @@ def containerStats(): # prints the stats for the container
     print("Container size: " + str(sum(os.path.getsize(f) for f in os.listdir(".") if os.path.isfile(f))) + " bytes")
     print("Container file count: " + str(len([name for name in os.listdir(".") if os.path.isfile(name)])))
     print("Container contents: " + str(os.listdir(".")))
+    print("Upload database: " + log.name)
 
 os.chdir(CONTAINER_FOLDER) # change active folder to container
 print("Simple File Container cleaner")
 containerStats()
 
-askDel = input("Delete all files in the container? (y/n): ")
+askDel = input("Delete all files in the container and clear the upload database? (y/n): ")
 if askDel[:1] == "y":
     try:
         #shutil.rmtree(CONTAINER_FOLDER)
-        shutil.rmtree(".", ignore_errors=True)
+        shutil.rmtree(".", ignore_errors=True) # clear the container folder
+        log.truncate() # clear the upload database
         print("\nCleared the container successfully!")
         containerStats()
 

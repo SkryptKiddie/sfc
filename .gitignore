@@ -3,3 +3,6 @@
 www/c/.DS_Store
 www/.DS_Store
 .DS_Store
+key.pem
+cert.crt
+log.db
