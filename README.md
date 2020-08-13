@@ -12,12 +12,12 @@ The `sfc_api.py` program handles uploading files and storing them in the contain
 
 # TODO
 - Add support for more file types
-- Add HTTPS support
+- Add HTTPS support (working on implementing)
 - ~~Add token support~~
-- Add dedicated upload logging (currently using the built-in logging from http.server)
+- ~~Add dedicated upload logging (currently using the built-in logging from http.server)~~
 
 # Quick setup
-1. Clone this repository to any folder on your computer.
+1. Clone this repository to any folder on your computer. TinyDB is required if you don't already have it, `pip3 install tinyDB`.
 2. Open the `config.json` file and edit the values as mentioned below:
 - Server IP or domain that the server will be accessible from. Default is `127.0.0.1`.
 - WWW Port that the normal website can be accessed from, for viewing files. Default is `80`.
