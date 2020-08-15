@@ -1,14 +1,11 @@
 import http, os, sys, json, ssl # simple file storage backend
-import random, string, os.path, time # tested on python 3.8.5
+import random, string, os.path, time, pprint # tested on python 3.8.5
 from io import BytesIO
 from threading import Thread
 from socketserver import ThreadingMixIn
 from http.server import HTTPServer, CGIHTTPRequestHandler, BaseHTTPRequestHandler
 from datetime import datetime
 from tinydb import TinyDB, Query
-
-now = datetime.now()
-current_time = now.strftime("%H:%M:%S")
 
 log = TinyDB("log.db") # upload logging database
 with open('./config.json', 'r') as config_file:
@@ -31,7 +28,7 @@ class v: # holds all of the variables from config.json
     webURL = ("http://" + str(SERVER) + ":" + str(WEB_PORT))
 
 def generateFn(length): # sourced from https://pynative.com/python-generate-random-string/
-    letters = string.ascii_lowercase
+    letters = string.ascii_letters
     result_str = ''.join(random.choice(letters) for i in range(length))
     return str(result_str) # return the filename
 
@@ -39,10 +36,12 @@ class ReqHandler(BaseHTTPRequestHandler): # handle accidental GET requests to th
     def do_GET(self):
         self.send_error(405, message="This API only accepts POST requests")
         self.end_headers()
+        self.flush_headers()
 
     def do_POST(self): # handle incoming POST requests
         content_length = int(self.headers["Content-Length"])
         uploader_token = str(self.headers["Token"])
+        content_type = str(self.headers["Content-Type"])
         body = self.rfile.read(content_length)
         response = BytesIO()
         if str(uploader_token) == v.UPLOAD_TOKEN: # checks upload token
@@ -52,38 +51,47 @@ class ReqHandler(BaseHTTPRequestHandler): # handle accidental GET requests to th
                     self.send_header("Last-Modified", self.date_time_string(time.time()))
                     self.send_header("Content-type", "text/plain")
                     newFileName=(str(generateFn(v.FILENAME_LENGTH)) + ".txt")
-                    with open(str(newFileName), 'w') as newUpload: # sourced from https://www.geeksforgeeks.org/create-an-empty-file-using-python/
+                    with open(str(newFileName), "w") as newUpload: # sourced from https://www.geeksforgeeks.org/create-an-empty-file-using-python/
                         newUpload.write(str(body)) # store the string that we recieved
                         pass
-                    stats = os.stat(newFileName) # print stats for the newly uploaded file in the terminal
-
-                    print("New upload, " + str(newFileName) + " and is " + str(stats.st_size) + " bytes. File count: " + str(len([name for name in os.listdir(".") if os.path.isfile(name)])))
-                    print(str(v.webURL) + "/c/" + newFileName) # prints the URL to the file
-                    log.insert(
-                        {"upload_time": self.log_date_time_string(), 
-                        "token": v.UPLOAD_TOKEN, 
+                    try: # attempt to log the upload in the database
+                        log.insert(
+                        {"upload_time": str(self.log_date_time_string()), 
                         "uploader_ip": str(self.address_string()),
-                        "filename": newFileName})
+                        "token": str(v.UPLOAD_TOKEN), 
+                        "filename": str(newFileName),
+                        "filetype": str(content_type)})
+                    except: # traceback incase the log file isn't available
+                        stats = os.stat(newFileName)
+                        print(str(self.log_date_time_string()) + 
+                        " | IP: " + str(self.address_string()) + 
+                        " | File: " + str(newFileName) + 
+                        " | Size: " + str(stats.st_size) + " bytes." + 
+                        " | File count: " + str(len([name for name in os.listdir(".") if os.path.isfile(name)])))
 
                     link = str.encode(str(v.webURL) + "/c/" + str(newFileName) + "\n")
                     response.write(link) # send the URL to the file
                     self.wfile.write(response.getvalue())
                     self.end_headers()
+                    self.flush_headers()
 
                 except: # in case something happens, tell the client and log it
                     print("An error occured while trying to upload.")
                     self.send_error(500, message="An error occured while trying to upload your file, please try again later")
                     self.end_headers()
+                    self.flush_headers()
 
             else: # error if file too big
                 print("Rejected large upload.")
                 self.send_error(431, message="File size exceeds limit") # 431 Request Header Fields Too Large
                 self.end_headers()
+                self.flush_headers()
 
         else: # error if incorrect token
             print("Rejected unauthorised uploader.")
             self.send_error(401, message="Incorrect or missing upload token") # 401 Unauthorised
             self.end_headers()
+            self.flush_headers()
 
 # runtime
 def prestart():

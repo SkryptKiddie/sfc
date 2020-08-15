@@ -17,8 +17,9 @@ The `sfc_api.py` program handles uploading files and storing them in the contain
 - ~~Add dedicated upload logging (currently using the built-in logging from http.server)~~
 
 # Quick setup
-1. Clone this repository to any folder on your computer. TinyDB is required if you don't already have it, `pip3 install tinyDB`.
-2. Open the `config.json` file and edit the values as mentioned below:
+1. Clone this repository to any folder on your computer.
+2. Run `pip3 install -r requirements.txt`
+3. Open the `config.json` file and edit the values as mentioned below:
 - Server IP or domain that the server will be accessible from. Default is `127.0.0.1`.
 - WWW Port that the normal website can be accessed from, for viewing files. Default is `80`.
 - API port, that the port the endpoint will recieve files on. Default is `8080`.
@@ -29,5 +30,5 @@ The `sfc_api.py` program handles uploading files and storing them in the contain
 - Maximum upload size, in bytes. Default is `10mb`.
 - Upload token, adds a layer of protection against unwanted uploads. Default is `test_123`. Must be embedded in the HTTP request Headers like so: `"Token: test_123"`.
 - Upload log databse. Logs all of the successful uploads and stores the request time, filename, origin IP and token. Default is `log.db`.
-3. Edit the template cURL command on`www/index.html` to reflect your instance settings.
-4. Launch both of the Python files with sudo privileges. The page can be accessed at the servers IP on port 80.
+4. Edit the template cURL command on`www/index.html` to reflect your instance settings.
+5. Launch both of the Python files with sudo privileges. The page can be accessed at the servers IP on port 80.

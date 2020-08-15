@@ -1,0 +1,4 @@
+urllib3==1.25.10
+pprint==0.1
+pyOpenSSL==19.1.0
+tinydb==4.1.1
