@@ -2,7 +2,9 @@
 .vscode
 www/c/.DS_Store
 www/.DS_Store
+www/c/*
 .DS_Store
 key.pem
 cert.crt
 log.db
+sfc_del.py

@@ -7,7 +7,6 @@ from http.server import HTTPServer, CGIHTTPRequestHandler, BaseHTTPRequestHandle
 from datetime import datetime
 from tinydb import TinyDB, Query
 
-log = TinyDB("log.db") # upload logging database
 with open('./config.json', 'r') as config_file:
     data = json.load(config_file)
 
@@ -27,14 +26,19 @@ class v: # holds all of the variables from config.json
     apiURL = ("http://" + str(SERVER) + ":" + str(API_PORT))
     webURL = ("http://" + str(SERVER) + ":" + str(WEB_PORT))
 
+log = TinyDB(v.UPLOAD_DB, indent=4) # upload logging database
+
 def generateFn(length): # sourced from https://pynative.com/python-generate-random-string/
     letters = string.ascii_letters
     result_str = ''.join(random.choice(letters) for i in range(length))
     return str(result_str) # return the filename
 
+def generateGuid(): # generate file hex in case the file is renamed or something
+    return ''.join(random.SystemRandom().choice(string.ascii_lowercase + string.ascii_uppercase + string.digits) for _ in range(20))
+
 class ReqHandler(BaseHTTPRequestHandler): # handle accidental GET requests to the backend
     def do_GET(self):
-        self.send_error(405, message="This API only accepts POST requests")
+        self.send_error(405, message="This endpoint only accepts POST requests")
         self.end_headers()
         self.flush_headers()
 
@@ -47,30 +51,34 @@ class ReqHandler(BaseHTTPRequestHandler): # handle accidental GET requests to th
         if str(uploader_token) == v.UPLOAD_TOKEN: # checks upload token
             if content_length < v.MAX_UPLOAD: # checks file size
                 try: # try to upload the file
+                    newFileName = (str(generateFn(v.FILENAME_LENGTH)) + ".txt")
+                    newFileGuid = generateGuid()
                     self.send_response(200, message="Upload recieved")
-                    self.send_header("Last-Modified", self.date_time_string(time.time()))
                     self.send_header("Content-type", "text/plain")
-                    newFileName=(str(generateFn(v.FILENAME_LENGTH)) + ".txt")
+                    self.send_header("Upload-ID", str(newFileGuid))
                     with open(str(newFileName), "w") as newUpload: # sourced from https://www.geeksforgeeks.org/create-an-empty-file-using-python/
-                        newUpload.write(str(body)) # store the string that we recieved
+                        newUpload.write(str(body)[2:-1]) # store the string that we recieved
                         pass
                     try: # attempt to log the upload in the database
                         log.insert(
                         {"upload_time": str(self.log_date_time_string()), 
                         "uploader_ip": str(self.address_string()),
+                        "guid": str(newFileGuid),
                         "token": str(v.UPLOAD_TOKEN), 
                         "filename": str(newFileName),
                         "filetype": str(content_type)})
-                    except: # traceback incase the log file isn't available
+                    except: # traceback incase the log file isn't available or something
                         stats = os.stat(newFileName)
                         print(str(self.log_date_time_string()) + 
                         " | IP: " + str(self.address_string()) + 
+                        " | GUID: " + str(newFileGuid) +
                         " | File: " + str(newFileName) + 
                         " | Size: " + str(stats.st_size) + " bytes." + 
                         " | File count: " + str(len([name for name in os.listdir(".") if os.path.isfile(name)])))
 
                     link = str.encode(str(v.webURL) + "/c/" + str(newFileName) + "\n")
                     response.write(link) # send the URL to the file
+                    #response.write(str.encode((newFileGuid)))
                     self.wfile.write(response.getvalue())
                     self.end_headers()
                     self.flush_headers()
@@ -101,7 +109,6 @@ def prestart():
     print("Current container: " + str(os.getcwd())) # print current working directory
     print("Container size: " + str(sum(os.path.getsize(f) for f in os.listdir(".") if os.path.isfile(f))) + " bytes") # get folder size
     print("Container file count: " + str(len([name for name in os.listdir(".") if os.path.isfile(name)]))) # get amount of files in container folder
-    print("Container contents: " + str(os.listdir("."))) # list contents of the container
     print("Upload log database: " + log.name)
     
 class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
@@ -111,8 +118,8 @@ apiServer = ThreadingHTTPServer((v.SERVER, v.API_PORT), ReqHandler)
 
 if v.SSL_STATUS == True: # check whether SSL is enabled or not
     apiServer.socket = ssl.wrap_socket (apiServer.socket,  # ssl is enabled
-        keyfile="./key.pem",
-        certfile='./cert.crt', server_side=True)
+        keyfile=v.SSL_KEY,
+        certfile=v.SSL_CERT, server_side=True)
 else:
     pass # ssl is disabled
 
@@ -122,4 +129,4 @@ try: # start the API
     apiServer.serve_forever() # start API endpoint
 except KeyboardInterrupt: # handle keyboard interrupt
     print("Stopping...")
-    exit()        
+    exit()
