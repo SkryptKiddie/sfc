@@ -1,5 +1,5 @@
-import http, os, sys, json, ssl # simple file storage backend
-import random, string, os.path, time, pprint # tested on python 3.8.5
+import http, os, sys, json, pathlib, ssl # simple file storage backend
+import random, string, os.path, time # tested on python 3.8.5
 from io import BytesIO
 from threading import Thread
 from socketserver import ThreadingMixIn
@@ -27,6 +27,7 @@ class v: # holds all of the variables from config.json
     webURL = ("http://" + str(SERVER) + ":" + str(WEB_PORT))
 
 log = TinyDB(v.UPLOAD_DB, indent=4) # upload logging database
+file = Query()
 
 def generateFn(length): # sourced from https://pynative.com/python-generate-random-string/
     letters = string.ascii_letters
@@ -56,6 +57,7 @@ class ReqHandler(BaseHTTPRequestHandler): # handle accidental GET requests to th
                     self.send_response(200, message="Upload recieved")
                     self.send_header("Content-type", "text/plain")
                     self.send_header("Upload-ID", str(newFileGuid))
+                    self.send_header("Uploaded", "True")
                     with open(str(newFileName), "w") as newUpload: # sourced from https://www.geeksforgeeks.org/create-an-empty-file-using-python/
                         newUpload.write(str(body)[2:-1]) # store the string that we recieved
                         pass
@@ -86,18 +88,44 @@ class ReqHandler(BaseHTTPRequestHandler): # handle accidental GET requests to th
                 except: # in case something happens, tell the client and log it
                     print("An error occured while trying to upload.")
                     self.send_error(500, message="An error occured while trying to upload your file, please try again later")
+                    self.send_header("Uploaded", "False")
                     self.end_headers()
                     self.flush_headers()
 
             else: # error if file too big
                 print("Rejected large upload.")
                 self.send_error(431, message="File size exceeds limit") # 431 Request Header Fields Too Large
+                self.send_header("Uploaded", "False")
                 self.end_headers()
                 self.flush_headers()
 
         else: # error if incorrect token
             print("Rejected unauthorised uploader.")
-            self.send_error(401, message="Incorrect or missing upload token") # 401 Unauthorised
+            self.send_error(401, message="Bad Token") # 401 Unauthorised
+            self.send_header("Uploaded", "False")
+            self.end_headers()
+            self.flush_headers()
+
+    def do_DELETE(self): # handle DELETE requests
+        uploader_token = str(self.headers["Token"])
+        delFile = str(self.headers["File"])
+        if str(uploader_token) == v.UPLOAD_TOKEN:
+            reqFile = pathlib.Path(delFile)
+            if reqFile.exists():
+                log.remove(file.filename == delFile)
+                os.remove(delFile)
+                self.send_response(200, message="File Deleted")
+                self.send_header("Deleted", "True")
+                self.end_headers()
+                self.flush_headers()
+            else:
+                self.send_response(404, message="File Not Found")
+                self.send_header("Deleted", "False")
+                self.end_headers()
+                self.flush_headers()
+        else:
+            self.send_error(401, message="Bad Token") # 401 Unauthorised
+            self.send_header("Deleted", "False")
             self.end_headers()
             self.flush_headers()
 
@@ -113,9 +141,7 @@ def prestart():
     
 class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
-
-apiServer = ThreadingHTTPServer((v.SERVER, v.API_PORT), ReqHandler)
-
+apiServer = ThreadingHTTPServer((v.SERVER, v.API_PORT), BaseHTTPRequestHandler, ReqHandler)
 if v.SSL_STATUS == True: # check whether SSL is enabled or not
     apiServer.socket = ssl.wrap_socket (apiServer.socket,  # ssl is enabled
         keyfile=v.SSL_KEY,
