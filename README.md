@@ -2,7 +2,7 @@
 ### A basic file uploader and host.
 Each uploaded file is stored in the "container", which is just a fancy way of saying a folder.
 
-```curl -d "Your message here" -H "Token: YOUR_TOKEN" -X POST http://"YOUR IP/DOMAIN":8080```
+```curl -d "Your message here" -H "Token: YOUR_TOKEN" -X POST http://"YOUR IP/DOMAIN":1024```
 
 `sfc_www.py` is responsible for presenting files and serving the landing page to viewers.  
 
@@ -12,7 +12,7 @@ The `sfc_api.py` program handles uploading files and storing them in the contain
 
 # TODO
 - Add support for more file types
-- Add HTTPS support (working on implementing)
+- ~~Add HTTPS support (working on implementing)~~
 - ~~Add token support~~
 - ~~Add dedicated upload logging (currently using the built-in logging from http.server)~~
 
@@ -32,3 +32,19 @@ The `sfc_api.py` program handles uploading files and storing them in the contain
 - Upload log databse. Logs all of the successful uploads and stores the request time, filename, origin IP and token. Default is `log.db`.
 4. Edit the template cURL command on`www/index.html` to reflect your instance settings.
 5. Launch both of the Python files with sudo privileges. The page can be accessed at the servers IP on the specified web port. If your SSL key requires a password, you will be prompted to input it when you start each program.
+
+# Troubleshooting  
+## How do I upload something?
+Refer to the `api.md` file located in this repo.  
+
+## How do I disable SSL?
+If for some reason, you'd like to disable SSL support, follow these instructions:  
+1. Comment out line 23 in `sfc_www.py`.
+2. Comment out line 144 in `sfc_api.py`.
+3. Change `WWW_PORT` from 443 to 80 in `config.json`.
+
+## I'm getting "Connection Refused" errors by my browser
+Make sure your SSL keys are configured properly, and that you're visiting the correct site, which should be `https://127.0.0.1:443`, replacing 127.0.0.1 with the IP of your server.
+
+## Can I add new features?
+Sure! Just make a pull request and describe what you're adding and I will take a look.
