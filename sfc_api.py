@@ -3,7 +3,7 @@ import random, string, os.path, time # tested on python 3.8.5
 from io import BytesIO
 from threading import Thread
 from socketserver import ThreadingMixIn
-from http.server import HTTPServer, CGIHTTPRequestHandler, BaseHTTPRequestHandler
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from datetime import datetime
 from tinydb import TinyDB, Query
 
@@ -14,7 +14,6 @@ class v: # holds all of the variables from config.json
     SERVER = data["SERVER"]
     API_PORT = data["API_PORT"]
     WEB_PORT = data["WWW_PORT"]
-    SSL_STATUS = data["SSL_ENABLED"]
     SSL_KEY = data["SSL_KEY"]
     SSL_CERT = data["SSL_CERT"]
     WEB_FOLDER = data["WWW_FOLDER"]
@@ -142,12 +141,7 @@ def prestart():
 class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
 apiServer = ThreadingHTTPServer((v.SERVER, v.API_PORT), BaseHTTPRequestHandler, ReqHandler)
-if v.SSL_STATUS == True: # check whether SSL is enabled or not
-    apiServer.socket = ssl.wrap_socket (apiServer.socket,  # ssl is enabled
-        keyfile=v.SSL_KEY,
-        certfile=v.SSL_CERT, server_side=True)
-else:
-    pass # ssl is disabled
+apiServer.socket = ssl.wrap_socket(apiServer.socket, certfile=v.SSL_CERT, keyfile=v.SSL_KEY, server_side=True)
 
 try: # start the API
     prestart()

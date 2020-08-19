@@ -1,8 +1,8 @@
 # API
 ## Upload a file
-```curl -d "Your message here" -H "Token: YOUR_TOKEN" -X POST http://"YOUR IP/DOMAIN":8080```
+```curl -d "Your message here" -H "Token: YOUR_TOKEN" -X POST "YOUR IP/DOMAIN":1024```
 
-POST request to the server on port 8080 with the following header `("Token": "TOKEN_HERE")`
+POST request to the server on port 1024 with the following header `("Token": "TOKEN_HERE")`
 and the text to be uploaded in the body.  
 
 ### Successful request
@@ -14,9 +14,9 @@ If all conditions are met, the API will respond with `200 File Uploaded` and res
 - If an unexpected error occurs, the API will respond with 500 Internal Server Error and a `(Uploaded: False)` header.
 
 ## Delete a file
-```curl -H 'Token: TOKEN_HERE' -H 'File: FILENAME_HERE.txt' http://"YOUR IP/DOMAIN":8080```
+```curl -H 'Token: TOKEN_HERE' -H 'File: FILENAME_HERE.txt' "YOUR IP/DOMAIN":1024```
 
-DELETE request to the API on port 8080 with 2 headers:
+DELETE request to the API on port 1024 with 2 headers:
 - Upload token
 - The file name, including the .txt extension.
 
