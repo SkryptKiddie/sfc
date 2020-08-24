@@ -8,20 +8,22 @@ from datetime import datetime
 from tinydb import TinyDB, Query
 
 with open('./config.json', 'r') as config_file:
-    data = json.load(config_file)
+    configs = json.load(config_file)
+
+with open('./users.json', 'r') as users:
+    tokenList = json.load(users)
 
 class v: # holds all of the variables from config.json
-    SERVER = data["SERVER"]
-    API_PORT = data["API_PORT"]
-    WEB_PORT = data["WWW_PORT"]
-    SSL_KEY = data["SSL_KEY"]
-    SSL_CERT = data["SSL_CERT"]
-    WEB_FOLDER = data["WWW_FOLDER"]
-    CONTAINER_FOLDER = data["WWW_FOLDER"] + "/" + data["CONTAINER_FOLDER"]
-    MAX_UPLOAD = data["MAX_UPLOAD_SIZE"]
-    FILENAME_LENGTH = data["FILENAME_LENGTH"]
-    UPLOAD_TOKEN = data["UPLOAD_TOKEN"]
-    UPLOAD_DB = data["UPLOAD_DB"]
+    SERVER = configs["SERVER"]
+    API_PORT = configs["API_PORT"]
+    WEB_PORT = configs["WWW_PORT"]
+    SSL_KEY = configs["SSL_KEY"]
+    SSL_CERT = configs["SSL_CERT"]
+    WEB_FOLDER = configs["WWW_FOLDER"]
+    CONTAINER_FOLDER = configs["WWW_FOLDER"] + "/" + configs["CONTAINER_FOLDER"]
+    MAX_UPLOAD = configs["MAX_UPLOAD_SIZE"]
+    FILENAME_LENGTH = configs["FILENAME_LENGTH"]
+    UPLOAD_DB = configs["UPLOAD_DB"]
     apiURL = ("http://" + str(SERVER) + ":" + str(API_PORT))
     webURL = ("http://" + str(SERVER) + ":" + str(WEB_PORT))
 
@@ -36,11 +38,10 @@ def generateFn(length): # sourced from https://pynative.com/python-generate-rand
 def generateGuid(): # generate file hex in case the file is renamed or something
     return ''.join(random.SystemRandom().choice(string.ascii_lowercase + string.ascii_uppercase + string.digits) for _ in range(20))
 
-class ReqHandler(BaseHTTPRequestHandler): # handle accidental GET requests to the backend
-    def do_GET(self):
+class ReqHandler(BaseHTTPRequestHandler): 
+    def do_GET(self): # handle accidental GET requests to the backend
         self.send_error(405, message="This endpoint only accepts POST requests")
         self.end_headers()
-        self.flush_headers()
 
     def do_POST(self): # handle incoming POST requests
         content_length = int(self.headers["Content-Length"])
@@ -48,7 +49,7 @@ class ReqHandler(BaseHTTPRequestHandler): # handle accidental GET requests to th
         content_type = str(self.headers["Content-Type"])
         body = self.rfile.read(content_length)
         response = BytesIO()
-        if str(uploader_token) == v.UPLOAD_TOKEN: # checks upload token
+        if [x for x in tokenList['userList'] if x.get('token') == uploader_token]: # check upload token
             if content_length < v.MAX_UPLOAD: # checks file size
                 try: # try to upload the file
                     newFileName = (str(generateFn(v.FILENAME_LENGTH)) + ".txt")
@@ -65,7 +66,7 @@ class ReqHandler(BaseHTTPRequestHandler): # handle accidental GET requests to th
                         {"upload_time": str(self.log_date_time_string()), 
                         "uploader_ip": str(self.address_string()),
                         "guid": str(newFileGuid),
-                        "token": str(v.UPLOAD_TOKEN), 
+                        "token": str(uploader_token), 
                         "filename": str(newFileName),
                         "filetype": str(content_type)})
                     except: # traceback incase the log file isn't available or something
@@ -79,36 +80,31 @@ class ReqHandler(BaseHTTPRequestHandler): # handle accidental GET requests to th
 
                     link = str.encode(str(v.webURL) + "/c/" + str(newFileName) + "\n")
                     response.write(link) # send the URL to the file
-                    #response.write(str.encode((newFileGuid)))
                     self.wfile.write(response.getvalue())
                     self.end_headers()
-                    self.flush_headers()
 
                 except: # in case something happens, tell the client and log it
                     print("An error occured while trying to upload.")
                     self.send_error(500, message="An error occured while trying to upload your file, please try again later")
                     self.send_header("Uploaded", "False")
                     self.end_headers()
-                    self.flush_headers()
 
             else: # error if file too big
                 print("Rejected large upload.")
                 self.send_error(431, message="File size exceeds limit") # 431 Request Header Fields Too Large
                 self.send_header("Uploaded", "False")
                 self.end_headers()
-                self.flush_headers()
 
         else: # error if incorrect token
             print("Rejected unauthorised uploader.")
             self.send_error(401, message="Bad Token") # 401 Unauthorised
             self.send_header("Uploaded", "False")
             self.end_headers()
-            self.flush_headers()
 
     def do_DELETE(self): # handle DELETE requests
         uploader_token = str(self.headers["Token"])
         delFile = str(self.headers["File"])
-        if str(uploader_token) == v.UPLOAD_TOKEN:
+        if [x for x in tokenList['userList'] if x.get('token') == uploader_token]:
             reqFile = pathlib.Path(delFile)
             if reqFile.exists():
                 log.remove(file.filename == delFile)
@@ -117,11 +113,13 @@ class ReqHandler(BaseHTTPRequestHandler): # handle accidental GET requests to th
                 self.send_header("Deleted", "True")
                 self.end_headers()
                 self.flush_headers()
+
             else:
                 self.send_response(404, message="File Not Found")
                 self.send_header("Deleted", "False")
                 self.end_headers()
                 self.flush_headers()
+
         else:
             self.send_error(401, message="Bad Token") # 401 Unauthorised
             self.send_header("Deleted", "False")
@@ -140,11 +138,11 @@ def prestart():
     
 class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
-apiServer = ThreadingHTTPServer((v.SERVER, v.API_PORT), BaseHTTPRequestHandler, ReqHandler)
+apiServer = ThreadingHTTPServer((v.SERVER, v.API_PORT), ReqHandler)
 apiServer.socket = ssl.wrap_socket(apiServer.socket, certfile=v.SSL_CERT, keyfile=v.SSL_KEY, server_side=True)
 
 try: # start the API
-    prestart()
+    prestart() # print(tokenList["userList"])
     print("Starting the server, quit with ^C\n")
     apiServer.serve_forever() # start API endpoint
 except KeyboardInterrupt: # handle keyboard interrupt

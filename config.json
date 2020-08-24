@@ -8,6 +8,5 @@
     "CONTAINER_FOLDER" : "c",
     "MAX_UPLOAD_SIZE" : 10000000,
     "FILENAME_LENGTH" : 6,
-    "UPLOAD_TOKEN" : "test_123",
     "UPLOAD_DB" : "./log.db"
   }

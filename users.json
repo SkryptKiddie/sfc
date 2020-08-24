@@ -1,0 +1,19 @@
+{
+    "userList": [
+        {
+            "username": "Owner",
+            "userid": "lfE2-YpX1Y",
+            "token": "admin_token"
+        },
+        {
+            "username": "John Doe",
+            "userid": "B37t-DkMF",
+            "token": "test_token1"
+        },
+        {
+            "username": "Jane Doe",
+            "userid": "kHDO-6XI2",
+            "token": "test_token2"
+        }
+    ]
+}

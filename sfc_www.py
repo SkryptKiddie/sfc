@@ -1,8 +1,8 @@
+import ssl, json, os, sys
 from http.server import HTTPServer,SimpleHTTPRequestHandler
 from socketserver import BaseServer
 from threading import Thread
 from socketserver import ThreadingMixIn
-import ssl, json, os, sys
 
 with open("./config.json", 'r') as config_file: # import the JSON config data
 	data = json.load(config_file)

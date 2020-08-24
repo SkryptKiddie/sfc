@@ -9,3 +9,10 @@ cert.pem
 log.db
 sfc_del.py
 test.py
+.idea/misc.xml
+.idea/modules.xml
+.idea/sfc.iml
+.idea/vcs.xml
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/.gitignore
+sfc_userEditor.py
