@@ -9,21 +9,22 @@ from tinydb import TinyDB, Query
 
 with open('./config.json', 'r') as config_file:
     configs = json.load(config_file)
-
+    
 with open('./users.json', 'r') as users:
     tokenList = json.load(users)
 
 class v: # holds all of the variables from config.json
-    SERVER = configs["SERVER"]
-    API_PORT = configs["API_PORT"]
-    WEB_PORT = configs["WWW_PORT"]
-    SSL_KEY = configs["SSL_KEY"]
-    SSL_CERT = configs["SSL_CERT"]
-    WEB_FOLDER = configs["WWW_FOLDER"]
-    CONTAINER_FOLDER = configs["WWW_FOLDER"] + "/" + configs["CONTAINER_FOLDER"]
-    MAX_UPLOAD = configs["MAX_UPLOAD_SIZE"]
-    FILENAME_LENGTH = configs["FILENAME_LENGTH"]
-    UPLOAD_DB = configs["UPLOAD_DB"]
+    SERVER = configs["connection"]["SERVER"]
+    API_PORT = configs["connection"]["API_PORT"]
+    WEB_PORT = configs["connection"]["WWW_PORT"]
+    SSL_KEY = configs["connection"]["SSL_KEY"]
+    SSL_CERT = configs["connection"]["SSL_CERT"]
+    WEB_FOLDER = configs["settings"]["WWW_FOLDER"]
+    CONTAINER_FOLDER = configs["settings"]["WWW_FOLDER"] + "/" + configs["settings"]["CONTAINER_FOLDER"]
+    MAX_UPLOAD = configs["settings"]["MAX_UPLOAD_SIZE"]
+    FILENAME_LENGTH = configs["settings"]["FILENAME_LENGTH"]
+    UPLOAD_DB = configs["settings"]["UPLOAD_DB"]
+    ALLOWEDMIMES = configs["whitelist"]
     apiURL = ("http://" + str(SERVER) + ":" + str(API_PORT))
     webURL = ("http://" + str(SERVER) + ":" + str(WEB_PORT))
 
@@ -38,26 +39,40 @@ def generateFn(length): # sourced from https://pynative.com/python-generate-rand
 def generateGuid(): # generate file hex in case the file is renamed or something
     return ''.join(random.SystemRandom().choice(string.ascii_lowercase + string.ascii_uppercase + string.digits) for _ in range(20))
 
+def getFileMime(contentType): # pick which file extension to use
+    if contentType == "text/plain": # txt document
+        return ".txt"
+    if contentType == "image/png": # png image
+        return ".png"
+    if contentType == "image/jpeg": # jpeg image
+        return ".jpg"
+    if contentType == "image/gif": # gif image
+        return ".gif"
+    if contentType == "audio/webm": # webm video   
+        return ".webm"
+
 class ReqHandler(BaseHTTPRequestHandler): 
     def do_GET(self): # handle accidental GET requests to the backend
-        self.send_error(405, message="This endpoint only accepts POST requests")
+        self.send_error(405, message="This endpoint only accepts POST and DELETE requests")
         self.end_headers()
 
     def do_POST(self): # handle incoming POST requests
-        content_length = int(self.headers["Content-Length"])
-        uploader_token = str(self.headers["Token"])
-        content_type = str(self.headers["Content-Type"])
-        body = self.rfile.read(content_length)
+        contentLength = int(self.headers["Content-Length"])
+        contentType = str(self.headers["Content-Type"])
+        uploaderToken = str(self.headers["Token"])
+        body = self.rfile.read(contentLength)
         response = BytesIO()
-        if [x for x in tokenList['userList'] if x.get('token') == uploader_token]: # check upload token
-            if content_length < v.MAX_UPLOAD: # checks file size
+        
+        if [x for x in tokenList["userList"] if x.get("token") == str(uploaderToken)]: # check upload token
+            if contentLength < v.MAX_UPLOAD: # checks file size
                 try: # try to upload the file
-                    newFileName = (str(generateFn(v.FILENAME_LENGTH)) + ".txt")
+                    newFileName = (str(generateFn(v.FILENAME_LENGTH)) + getFileMime(contentType))
                     newFileGuid = generateGuid()
                     self.send_response(200, message="Upload recieved")
                     self.send_header("Content-type", "text/plain")
                     self.send_header("Upload-ID", str(newFileGuid))
                     self.send_header("Uploaded", "True")
+
                     with open(str(newFileName), "w") as newUpload: # sourced from https://www.geeksforgeeks.org/create-an-empty-file-using-python/
                         newUpload.write(str(body)[2:-1]) # store the string that we recieved
                         pass
@@ -66,9 +81,9 @@ class ReqHandler(BaseHTTPRequestHandler):
                         {"upload_time": str(self.log_date_time_string()), 
                         "uploader_ip": str(self.address_string()),
                         "guid": str(newFileGuid),
-                        "token": str(uploader_token), 
+                        "token": str(uploaderToken), 
                         "filename": str(newFileName),
-                        "filetype": str(content_type)})
+                        "mimetype": str(contentType)})
                     except: # traceback incase the log file isn't available or something
                         stats = os.stat(newFileName)
                         print(str(self.log_date_time_string()) + 
@@ -79,9 +94,12 @@ class ReqHandler(BaseHTTPRequestHandler):
                         " | File count: " + str(len([name for name in os.listdir(".") if os.path.isfile(name)])))
 
                     link = str.encode(str(v.webURL) + "/c/" + str(newFileName) + "\n")
+                    self.send_header("Upload-ID", str(newFileGuid))
+                    self.send_header("Uploaded", "True")
                     response.write(link) # send the URL to the file
                     self.wfile.write(response.getvalue())
                     self.end_headers()
+                    self.flush_headers()
 
                 except: # in case something happens, tell the client and log it
                     print("An error occured while trying to upload.")
@@ -96,10 +114,10 @@ class ReqHandler(BaseHTTPRequestHandler):
                 self.end_headers()
 
         else: # error if incorrect token
-            print("Rejected unauthorised uploader.")
-            self.send_error(401, message="Bad Token") # 401 Unauthorised
-            self.send_header("Uploaded", "False")
-            self.end_headers()
+                print("Rejected unauthorised uploader.")
+                self.send_error(401, message="Bad Token") # 401 Unauthorised
+                self.send_header("Uploaded", "False")
+                self.end_headers()
 
     def do_DELETE(self): # handle DELETE requests
         uploader_token = str(self.headers["Token"])
@@ -118,13 +136,11 @@ class ReqHandler(BaseHTTPRequestHandler):
                 self.send_response(404, message="File Not Found")
                 self.send_header("Deleted", "False")
                 self.end_headers()
-                self.flush_headers()
 
         else:
             self.send_error(401, message="Bad Token") # 401 Unauthorised
             self.send_header("Deleted", "False")
             self.end_headers()
-            self.flush_headers()
 
 # runtime
 def prestart():
@@ -139,7 +155,7 @@ def prestart():
 class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
 apiServer = ThreadingHTTPServer((v.SERVER, v.API_PORT), ReqHandler)
-apiServer.socket = ssl.wrap_socket(apiServer.socket, certfile=v.SSL_CERT, keyfile=v.SSL_KEY, server_side=True)
+#apiServer.socket = ssl.wrap_socket(apiServer.socket, certfile=v.SSL_CERT, keyfile=v.SSL_KEY, server_side=True)
 
 try: # start the API
     prestart() # print(tokenList["userList"])

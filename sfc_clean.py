@@ -7,8 +7,8 @@ logstat = os.stat("./log.db")
 with open('./config.json', 'r') as config_file:
     data = json.load(config_file)
 
-WEB_FOLDER = data["WWW_FOLDER"]
-CONTAINER_FOLDER = data["WWW_FOLDER"] + "/" + data["CONTAINER_FOLDER"]
+WEB_FOLDER = data["settings"]["WWW_FOLDER"]
+CONTAINER_FOLDER = data["settings"]["WWW_FOLDER"] + "/" + data["settings"]["CONTAINER_FOLDER"]
 
 def containerStats(): # prints the stats for the container
     print("Current container: " + str(os.getcwd()))

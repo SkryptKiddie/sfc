@@ -8,12 +8,12 @@ with open("./config.json", 'r') as config_file: # import the JSON config data
 	data = json.load(config_file)
 
 class v: # holds all of the variables from config.json
-	SERVER = data["SERVER"]
-	API_PORT = data["API_PORT"]
-	WEB_PORT = data["WWW_PORT"]
-	SSL_KEY = data["SSL_KEY"]
-	SSL_CERT = data["SSL_CERT"]
-	WEB_FOLDER = data["WWW_FOLDER"]
+	SERVER = data["connection"]["SERVER"]
+	API_PORT = data["connection"]["API_PORT"]
+	WEB_PORT = data["connection"]["WWW_PORT"]
+	SSL_KEY = data["connection"]["SSL_KEY"]
+	SSL_CERT = data["connection"]["SSL_CERT"]
+	WEB_FOLDER = data["settings"]["WWW_FOLDER"]
 	apiURL = (str(SERVER) + ":" + str(API_PORT))
 	webURL = (str(SERVER) + ":" + str(WEB_PORT))
 
