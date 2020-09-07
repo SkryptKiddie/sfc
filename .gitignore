@@ -15,5 +15,4 @@ test.py
 .idea/vcs.xml
 .idea/inspectionProfiles/profiles_settings.xml
 .idea/.gitignore
-sfc_userEditor.py
-OPTIONS.py
+testConfig.json

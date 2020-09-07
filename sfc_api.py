@@ -9,9 +9,6 @@ from tinydb import TinyDB, Query
 
 with open('./config.json', 'r') as config_file:
     configs = json.load(config_file)
-    
-with open('./users.json', 'r') as users:
-    tokenList = json.load(users)
 
 class v: # holds all of the variables from config.json
     SERVER = configs["connection"]["SERVER"]
@@ -24,12 +21,14 @@ class v: # holds all of the variables from config.json
     MAX_UPLOAD = configs["settings"]["MAX_UPLOAD_SIZE"]
     FILENAME_LENGTH = configs["settings"]["FILENAME_LENGTH"]
     UPLOAD_DB = configs["settings"]["UPLOAD_DB"]
+    USERS_DB = configs["settings"]["USERS_DB"]
     ALLOWEDMIMES = configs["whitelist"]
     apiURL = ("http://" + str(SERVER) + ":" + str(API_PORT))
     webURL = ("http://" + str(SERVER) + ":" + str(WEB_PORT))
 
 log = TinyDB(v.UPLOAD_DB, indent=4) # upload logging database
-file = Query()
+users = TinyDB(v.USERS_DB, indent=4) # user database
+search = Query()
 
 def generateFn(length): # sourced from https://pynative.com/python-generate-random-string/
     letters = string.ascii_letters
@@ -63,7 +62,7 @@ class ReqHandler(BaseHTTPRequestHandler):
         body = self.rfile.read(contentLength)
         response = BytesIO()
         
-        if [x for x in tokenList["userList"] if x.get("token") == str(uploaderToken)]: # check upload token
+        if users.contains(search.token == str(uploaderToken)) == True: # check upload token
             if contentLength < v.MAX_UPLOAD: # checks file size
                 try: # try to upload the file
                     newFileName = (str(generateFn(v.FILENAME_LENGTH)) + getFileMime(contentType))
@@ -122,7 +121,7 @@ class ReqHandler(BaseHTTPRequestHandler):
     def do_DELETE(self): # handle DELETE requests
         uploader_token = str(self.headers["Token"]) # uploader token
         delFile = str(self.headers["File"]) # file for deletion
-        if [x for x in tokenList['userList'] if x.get('token') == uploader_token]:
+        if users.contains(search.token == str(uploaderToken)) == True: # check upload token
             reqFile = pathlib.Path(delFile)
             if reqFile.exists():
                 log.remove(file.filename == delFile) # clear upload for the database
@@ -158,7 +157,7 @@ apiServer = ThreadingHTTPServer((v.SERVER, v.API_PORT), ReqHandler)
 apiServer.socket = ssl.wrap_socket(apiServer.socket, certfile=v.SSL_CERT, keyfile=v.SSL_KEY, server_side=True)
 
 try: # start the API
-    prestart() # print(tokenList["userList"])
+    prestart()
     print("Starting the server, quit with ^C\n")
     apiServer.serve_forever() # start API endpoint
 except KeyboardInterrupt: # handle keyboard interrupt

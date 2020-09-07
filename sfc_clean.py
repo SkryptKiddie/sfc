@@ -1,14 +1,17 @@
 import os,sys,json,shutil
 from tinydb import TinyDB, Query
 
-log = TinyDB("./log.db", indent=4) # upload logging database
-logstat = os.stat("./log.db")
-
 with open('./config.json', 'r') as config_file:
     data = json.load(config_file)
 
 WEB_FOLDER = data["settings"]["WWW_FOLDER"]
 CONTAINER_FOLDER = data["settings"]["WWW_FOLDER"] + "/" + data["settings"]["CONTAINER_FOLDER"]
+UPLOAD_DB = data["settings"]["UPLOAD_DB"]
+USER_DB = data["settings"]["USER_DB"]
+
+log = TinyDB(UPLOAD_DB, indent=4) # upload logging database
+logstat = os.stat(UPLOAD_DB)
+users = TinyDB(USER_DB, indent=4) # user database
 
 def containerStats(): # prints the stats for the container
     print("Current container: " + str(os.getcwd()))

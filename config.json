@@ -1,6 +1,6 @@
   {
     "connection": {
-      "SERVER" : "127.0.0.1",
+      "SERVER" : "0.0.0.0",
       "WWW_PORT" : 443,
       "API_PORT" : 1024,
       "SSL_KEY" : "key.pem",
@@ -11,6 +11,7 @@
       "CONTAINER_FOLDER" : "c",
       "MAX_UPLOAD_SIZE" : 10000000,
       "FILENAME_LENGTH" : 6,
-      "UPLOAD_DB" : "./log.db"
+      "UPLOAD_DB" : "./db/log.db",
+      "USER_DB" : "./db/users.db"
     }
   }
