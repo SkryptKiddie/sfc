@@ -120,20 +120,20 @@ class ReqHandler(BaseHTTPRequestHandler):
                 self.end_headers()
 
     def do_DELETE(self): # handle DELETE requests
-        uploader_token = str(self.headers["Token"])
-        delFile = str(self.headers["File"])
+        uploader_token = str(self.headers["Token"]) # uploader token
+        delFile = str(self.headers["File"]) # file for deletion
         if [x for x in tokenList['userList'] if x.get('token') == uploader_token]:
             reqFile = pathlib.Path(delFile)
             if reqFile.exists():
-                log.remove(file.filename == delFile)
-                os.remove(delFile)
+                log.remove(file.filename == delFile) # clear upload for the database
+                os.remove(delFile) # delete file from container
                 self.send_response(200, message="File Deleted")
                 self.send_header("Deleted", "True")
                 self.end_headers()
                 self.flush_headers()
 
             else:
-                self.send_response(404, message="File Not Found")
+                self.send_response(404, message="File Not Found") # 404 Not Found
                 self.send_header("Deleted", "False")
                 self.end_headers()
 
@@ -155,7 +155,7 @@ def prestart():
 class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
 apiServer = ThreadingHTTPServer((v.SERVER, v.API_PORT), ReqHandler)
-#apiServer.socket = ssl.wrap_socket(apiServer.socket, certfile=v.SSL_CERT, keyfile=v.SSL_KEY, server_side=True)
+apiServer.socket = ssl.wrap_socket(apiServer.socket, certfile=v.SSL_CERT, keyfile=v.SSL_KEY, server_side=True)
 
 try: # start the API
     prestart() # print(tokenList["userList"])

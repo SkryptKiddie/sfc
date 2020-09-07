@@ -12,12 +12,5 @@
       "MAX_UPLOAD_SIZE" : 10000000,
       "FILENAME_LENGTH" : 6,
       "UPLOAD_DB" : "./log.db"
-    },
-    "whitelist": {
-      "text/plain": [".txt"],
-      "image/png": [".png"],
-      "image/jpeg": [".jpg"],
-      "image/gif": [".gif"],
-      "audio/webm": [".webm"]
     }
   }
