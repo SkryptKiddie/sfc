@@ -2,7 +2,8 @@
 ### A basic file uploader and host.
 Each uploaded file is stored in the "container", which is just a fancy way of saying a folder.
 
-```curl -d "FILE OR @DATA" -H "Token: YOUR_TOKEN" -X POST http://"YOUR IP/DOMAIN":1024```
+```curl -d "FILE OR @DATA" -H "Token: YOUR_TOKEN" -X POST http://"YOUR IP/DOMAIN":1024```  
+[API documentation](https://github.com/SkryptKiddie/sfc/wiki/API)
 
 # TODO
 [Trello board](https://trello.com/b/tgSc5i7i/simple-file-container)
@@ -11,17 +12,7 @@ Each uploaded file is stored in the "container", which is just a fancy way of sa
 # Quick setup
 1. Clone this repository to any folder on your computer.
 2. Run `pip3 install -r requirements.txt`
-3. Open the `config.json` file and edit the values as mentioned below:
-- Server IP or domain that the server will be accessible from. Default is `0.0.0.0`.
-- WWW Port that the normal website can be accessed from, for viewing files. Default is `443`.
-- API port, that the port the endpoint will recieve files on. Default is `1024`.
-- Filepath to both your SSL key and SSL certificate. Until I can figure out how to make HTTPS support optional, you will have to manually disable it by commenting out the `httpServer.socket` and `apiServer.socket` lines.
-- WWW folder. This is where the index files are stored. Default is `www/`.
-- Container folder. This is where the uploaded files are stored. Default is `www/c`.
-- Filename length for uploads, default is `6`.
-- Maximum upload size, in bytes. Default is `10mb`.
-- Upload log databse. Logs all of the successful uploads and stores the request time, filename, origin IP and token. Default is `./db/log.db`.
-- User databse. Stores all the information required to authorise and track uploads. Default is `./db/users.db`.
+3. Edit config.json using [this wiki as a guide](https://github.com/SkryptKiddie/sfc/wiki/Configuration).
 4. Edit the template cURL command on`www/index.html` to reflect your instance settings.
 5. Launch both of the Python files with sudo privileges. The page can be accessed at the servers IP on the specified web port. If your SSL key requires a password, you will be prompted to input it when you start each program.
 
@@ -31,10 +22,6 @@ Each uploaded file is stored in the "container", which is just a fancy way of sa
 - image/jpeg
 - image/gif
 - audio/webm
-
-# Troubleshooting  
-## How do I upload something?
-Refer to the `api.md` file located in this repository.  
 
 ## How do I disable SSL?
 If for some reason, you'd like to disable SSL support, follow these instructions:  
