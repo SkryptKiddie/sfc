@@ -11,6 +11,7 @@ The `sfc_api.py` program handles uploading files and storing them in the contain
 `sfc_clean.py` can be used to delete all the contents of the container.
 
 # TODO
+[Trello board](https://trello.com/b/tgSc5i7i/simple-file-container)
 - Add support for ratelimiting API requests.
 - ~~Add support for more file types~~
 - ~~Add HTTPS support (working on implementing)~~
