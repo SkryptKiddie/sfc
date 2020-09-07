@@ -21,8 +21,7 @@ class v: # holds all of the variables from config.json
     MAX_UPLOAD = configs["settings"]["MAX_UPLOAD_SIZE"]
     FILENAME_LENGTH = configs["settings"]["FILENAME_LENGTH"]
     UPLOAD_DB = configs["settings"]["UPLOAD_DB"]
-    USERS_DB = configs["settings"]["USERS_DB"]
-    ALLOWEDMIMES = configs["whitelist"]
+    USERS_DB = configs["settings"]["USER_DB"]
     apiURL = ("http://" + str(SERVER) + ":" + str(API_PORT))
     webURL = ("http://" + str(SERVER) + ":" + str(WEB_PORT))
 
