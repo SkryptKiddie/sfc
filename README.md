@@ -4,19 +4,9 @@ Each uploaded file is stored in the "container", which is just a fancy way of sa
 
 ```curl -d "FILE OR @DATA" -H "Token: YOUR_TOKEN" -X POST http://"YOUR IP/DOMAIN":1024```
 
-`sfc_www.py` is responsible for presenting files and serving the landing page to viewers.  
-
-The `sfc_api.py` program handles uploading files and storing them in the container.
-
-`sfc_clean.py` can be used to delete all the contents of the container.
-
 # TODO
 [Trello board](https://trello.com/b/tgSc5i7i/simple-file-container)
 - Add support for ratelimiting API requests.
-- ~~Add support for more file types~~
-- ~~Add HTTPS support (working on implementing)~~
-- ~~Add token support~~
-- ~~Add dedicated upload logging (currently using the built-in logging from http.server)~~
 
 # Quick setup
 1. Clone this repository to any folder on your computer.
@@ -30,10 +20,10 @@ The `sfc_api.py` program handles uploading files and storing them in the contain
 - Container folder. This is where the uploaded files are stored. Default is `www/c`.
 - Filename length for uploads, default is `6`.
 - Maximum upload size, in bytes. Default is `10mb`.
-- Upload log databse. Logs all of the successful uploads and stores the request time, filename, origin IP and token. Default is `log.db`.
-4. Edit the `users.json` file and edit the default tokens for uploading. By default, there are 3 users.
-5. Edit the template cURL command on`www/index.html` to reflect your instance settings.
-6. Launch both of the Python files with sudo privileges. The page can be accessed at the servers IP on the specified web port. If your SSL key requires a password, you will be prompted to input it when you start each program.
+- Upload log databse. Logs all of the successful uploads and stores the request time, filename, origin IP and token. Default is `./db/log.db`.
+- User databse. Stores all the information required to authorise and track uploads. Default is `./db/users.db`.
+4. Edit the template cURL command on`www/index.html` to reflect your instance settings.
+5. Launch both of the Python files with sudo privileges. The page can be accessed at the servers IP on the specified web port. If your SSL key requires a password, you will be prompted to input it when you start each program.
 
 # Supported mimetypes out of the box
 - text/plain
