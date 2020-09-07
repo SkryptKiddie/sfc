@@ -6,7 +6,6 @@ www/c/*
 .DS_Store
 key.pem
 cert.pem
-log.db
 sfc_del.py
 test.py
 .idea/misc.xml
@@ -16,3 +15,5 @@ test.py
 .idea/inspectionProfiles/profiles_settings.xml
 .idea/.gitignore
 testConfig.json
+db/log.db
+db/users.db
