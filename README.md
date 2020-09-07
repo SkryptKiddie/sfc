@@ -39,7 +39,7 @@ Refer to the `api.md` file located in this repository.
 ## How do I disable SSL?
 If for some reason, you'd like to disable SSL support, follow these instructions:  
 1. Comment out line 23 in `sfc_www.py`.
-2. Comment out line 144 in `sfc_api.py`.
+2. Comment out line 156 in `sfc_api.py`.
 3. Change `WWW_PORT` from 443 to 80 in `config.json`.
 
 ## I'm getting "Connection Refused" errors by my browser

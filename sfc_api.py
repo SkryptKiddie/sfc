@@ -21,12 +21,12 @@ class v: # holds all of the variables from config.json
     MAX_UPLOAD = configs["settings"]["MAX_UPLOAD_SIZE"]
     FILENAME_LENGTH = configs["settings"]["FILENAME_LENGTH"]
     UPLOAD_DB = configs["settings"]["UPLOAD_DB"]
-    USERS_DB = configs["settings"]["USER_DB"]
+    USER_DB = configs["settings"]["USER_DB"]
     apiURL = ("http://" + str(SERVER) + ":" + str(API_PORT))
     webURL = ("http://" + str(SERVER) + ":" + str(WEB_PORT))
 
 log = TinyDB(v.UPLOAD_DB, indent=4) # upload logging database
-users = TinyDB(v.USERS_DB, indent=4) # user database
+users = TinyDB(v.USER_DB, indent=4) # user database
 search = Query()
 
 def generateFn(length): # sourced from https://pynative.com/python-generate-random-string/
@@ -67,7 +67,7 @@ class ReqHandler(BaseHTTPRequestHandler):
                     newFileName = (str(generateFn(v.FILENAME_LENGTH)) + getFileMime(contentType))
                     newFileGuid = generateGuid()
                     self.send_response(200, message="Upload recieved")
-                    self.send_header("Content-type", "text/plain")
+                    self.send_header("Content-Type", "application/json")
                     self.send_header("Upload-ID", str(newFileGuid))
                     self.send_header("Uploaded", "True")
 
@@ -92,8 +92,6 @@ class ReqHandler(BaseHTTPRequestHandler):
                         " | File count: " + str(len([name for name in os.listdir(".") if os.path.isfile(name)])))
 
                     link = str.encode(str(v.webURL) + "/c/" + str(newFileName) + "\n")
-                    self.send_header("Upload-ID", str(newFileGuid))
-                    self.send_header("Uploaded", "True")
                     response.write(link) # send the URL to the file
                     self.wfile.write(response.getvalue())
                     self.end_headers()

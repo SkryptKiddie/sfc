@@ -5,7 +5,7 @@ from tinydb import TinyDB, Query
 with open('./testConfig.json', 'r') as config_file:
     configs = json.load(config_file)
 log = TinyDB((configs["settings"]["UPLOAD_DB"]), indent=4) # upload database
-users = TinyDB((configs["settings"]["USERS_DB"]), indent=4) # user database
+users = TinyDB((configs["settings"]["USER_DB"]), indent=4) # user database
 search = Query()
 
 def generateString(length):
