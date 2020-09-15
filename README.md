@@ -11,7 +11,7 @@ Each uploaded file is stored in the "container", which is just a fancy way of sa
 
 # Quick setup
 1. Clone this repository to any folder on your computer.
-2. Run `pip3 install -r requirements.txt`
+2. Run `chmod +x firstrun.sh && ./firstrun.sh`
 3. Edit config.json using [this wiki as a guide](https://github.com/SkryptKiddie/sfc/wiki/Configuration).
 4. Edit the template cURL command on`www/index.html` to reflect your instance settings.
 5. Launch both of the Python files with sudo privileges. The page can be accessed at the servers IP on the specified web port. If your SSL key requires a password, you will be prompted to input it when you start each program.
