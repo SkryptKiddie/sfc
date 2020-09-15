@@ -66,7 +66,7 @@ class ReqHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self): # handle incoming POST requests
-        uploaderToken = str(self.headers["Authorization"])
+        uploaderToken = str(self.headers["Token"])
         contentType = str(self.headers["Content-Type"])
         contentLength = int(self.headers["Content-Length"])
         body = self.rfile.read(contentLength)
@@ -119,7 +119,7 @@ class ReqHandler(BaseHTTPRequestHandler):
                 self.end_headers()
 
     def do_DELETE(self): # handle DELETE requests
-        uploaderToken = str(self.headers["Authorization"]) # uploader token
+        uploaderToken = str(self.headers["Token"]) # uploader token
         contentLength = int(self.headers["Content-Length"])
         delFile = self.rfile.read(contentLength) # file for deletion
         if users.contains(search.token == str(uploaderToken)) == True: # check upload token
