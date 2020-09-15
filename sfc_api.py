@@ -125,7 +125,7 @@ class ReqHandler(BaseHTTPRequestHandler):
         if users.contains(search.token == str(uploaderToken)) == True: # check upload token
             reqFile = pathlib.Path(delFile)
             if reqFile.exists():
-                log.remove(file.filename == delFile) # clear upload for the database
+                log.remove(search.filename == delFile) # clear upload for the database
                 os.remove(delFile) # delete file from container
                 self.send_response(200, message="File Deleted")
                 self.end_headers()
