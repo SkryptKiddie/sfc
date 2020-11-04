@@ -15,7 +15,9 @@ Each uploaded file is stored in the "container", which is just a fancy way of sa
 3. Edit config.json using [this wiki as a guide](https://github.com/SkryptKiddie/sfc/wiki/Configuration).
 4. Edit the template cURL command on`www/index.html` to reflect your instance settings.
 5. Launch both of the Python files with sudo privileges. The page can be accessed at the servers IP on the specified web port. If your SSL key requires a password, you will be prompted to input it when you start each program.
-
+  
+**Precompiled Linux binaries available from the dist directory.**
+  
 # Supported mimetypes out of the box
 - text/plain
 - image/png

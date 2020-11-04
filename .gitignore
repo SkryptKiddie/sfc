@@ -17,3 +17,11 @@ test.py
 testConfig.json
 db/log.db
 db/users.db
+uploader.sxcu
+sfc_api.spec
+sfc_www.spec
+sfc_userEditor.spec
+sfc_clean.spec
+build/*
+__pycache__/*
+.idea/*
