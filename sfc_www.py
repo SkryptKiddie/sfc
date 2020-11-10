@@ -23,7 +23,7 @@ httpServer = ThreadingHTTPServer((v.SERVER, v.WEB_PORT), SimpleHTTPRequestHandle
 httpServer.socket = ssl.wrap_socket(httpServer.socket, certfile=v.SSL_CERT, keyfile=v.SSL_KEY, server_side=True)
 
 def prestart():
-	os.chdir(data["WWW_FOLDER"]) # set current directory as set in the WWW variable
+	os.chdir(v.WEB_FOLDER) # set current directory as set in the WWW variable
 	print("Simple File Container front-end")
 	print("URL: " + str(v.webURL)) # prints a url to the webserver
 	print("WWW folder: " + str(os.getcwd())) # current directory

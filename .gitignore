@@ -25,3 +25,6 @@ sfc_clean.spec
 build/*
 __pycache__/*
 .idea/*
+dist/config.json
+dist/db/*
+dist/www/*
