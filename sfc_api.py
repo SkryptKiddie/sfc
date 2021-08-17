@@ -162,4 +162,4 @@ try: # start the API
 except KeyboardInterrupt: # handle keyboard interrupt
     print(ct.TITLE + "Stopping..." + ct.ENDC)
     apiServer.server_close()
-    exit()
+    sys.exit()
